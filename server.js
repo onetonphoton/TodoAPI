@@ -18,7 +18,7 @@ app.get('/todos', function (req, res) {
 // GET /todos/1 or /todos/2 or /todos/:id etc.
 
 app.get('/todos/:id', function (req, res){
-  var todoId = parseInt(req.params.id);
+  var todoId = parseInt(req.params.id,10);
   var matchedTodo;
   todos.forEach(function (todo) {
     if (todoId === todo.id) {
@@ -30,7 +30,7 @@ app.get('/todos/:id', function (req, res){
   } else {
     res.status(404).send();
   }
-  res.send('Asking for todos with id of ' + req.params.id);
+  //res.send('Asking for todos with id of ' + req.params.id);
 });
 
 app.get('/', function (req, res) {
