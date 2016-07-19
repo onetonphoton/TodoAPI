@@ -19,20 +19,52 @@ app.use(bodyParser.json());
 //   description: "Go to market",
 //   completed: false
 // }];
-
+app.get('/', function (req, res) {
+  res.send('Todo API Root');
+});
 // GET /todos
 app.get('/todos', function (req, res) {
-  res.json(todos);
+  //res.json(todos);
+  var query = req.query;
+  var where = {};
+
+  if (query.hasOwnProperty('completed') && query.completed === 'true') {
+    where.completed = true;
+  } else if (query.hasOwnProperty('completed') && query.completed ==='false') {
+    where.completed = false;
+  }
+
+  if (query.hasOwnProperty('q') && query.q.length > 0) {
+    where.description = {
+      $like: '%' + query.q + '%'
+    };
+  }
+
+  db.todo.findAll({where: where}).then(function (todos) {
+    res.json(todos);
+  }, function (e) {
+    res.status(500).send();
+  })
+
 });
 
 app.get('/todos/:id', function (req, res){
   var todoId = parseInt(req.params.id, 10);
-  var matchedTodo = _.findWhere(todos, {id: todoId});
-  if (matchedTodo){
-    res.json(matchedTodo);
-  } else {
-    res.status(404).send();
-  }
+  db.todo.findById(todoId).then(function (todo) {
+    if (!!todo) {
+      res.json(todo.toJSON());
+    } else {
+      res.status(404).send();
+    }
+  }, function (e) {
+    res.status(500).send();
+  });
+  // var matchedTodo = _.findWhere(todos, {id: todoId});
+  // if (matchedTodo){
+  //   res.json(matchedTodo);
+  // } else {
+  //   res.status(404).send();
+  // }
 });
 // GET /todos/1 or /todos/2 or /todos/:id etc.
 
@@ -100,9 +132,7 @@ app.post('/todos', function (req, res) {
   // res.json(body);
 });
 
-app.get('/', function (req, res) {
-  res.send('Todo API Root');
-});
+
 
 db.sequelize.sync().then(function() {
   app.listen(PORT, function (){
